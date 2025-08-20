@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategy Flowchart Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            font-weight: 300;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            min-height: 600px;
+        }
+        
+        .sidebar {
+            background: #f8f9fa;
+            padding: 30px;
+            border-right: 1px solid #e9ecef;
+        }
+        
+        .content-area {
+            padding: 30px;
+            position: relative;
+        }
+        
+        .upload-section {
+            background: white;
+            border: 3px dashed #3498db;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .upload-section:hover {
+            border-color: #2980b9;
+            background: #f8f9ff;
+        }
+        
+        .upload-section.drag-over {
+            border-color: #27ae60;
+            background: #f0fff4;
+        }
+        
+        .upload-icon {
+            font-size: 3em;
+            color: #3498db;
+            margin-bottom: 20px;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            margin: 5px;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #27ae60 0%, #219a52 100%);
+        }
+        
+        .btn-success:hover {
+            box-shadow: 0 5px 15px rgba(39, 174, 96, 0.4);
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+        
+        .btn-warning:hover {
+            box-shadow: 0 5px 15px rgba(243, 156, 18, 0.4);
+        }
+        
+        .btn-purple {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+        }
+        
+        .btn-purple:hover {
+            box-shadow: 0 5px 15px rgba(155, 89, 182, 0.4);
+        }
+        
+        .settings-section {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .settings-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #34495e;
+        }
+        
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+        }
+        
+        .flowchart-canvas {
+            width: 100%;
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e9ecef;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #3498db, #2980b9);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+        
+        .status-message {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: 500;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .export-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .file-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #3498db;
+        }
+        
+        .ai-optimization-panel {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .ai-optimization-panel h4 {
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .template-links {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Strategy Flowchart Generator</h1>
+            <p>Transform your Excel strategy data into professional flowcharts with AI-powered optimization</p>
+        </div>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="settings-section">
+                    <h3>📁 Excel Upload</h3>
+                    <div class="template-links">
+                        <a href="#" class="btn btn-purple" onclick="downloadTemplate()">Download Template</a>
+                    </div>
+                    <div class="upload-section" id="uploadSection">
+                        <div class="upload-icon">📊</div>
+                        <h4>Drop Excel File Here</h4>
+                        <p>Or click to browse files</p>
+                        <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;">
+                    </div>
+                    <div id="fileInfo" class="file-info hidden">
+                        <strong>File loaded:</strong> <span id="fileName"></span><br>
+                        <strong>Rows:</strong> <span id="rowCount"></span>
+                    </div>
+                </div>
+                
+                <div class="ai-optimization-panel">
+                    <h4>🤖 AI Text Optimization</h4>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="aiEnabled" checked>
+                        <label for="aiEnabled">Enable AI text optimization</label>
+                    </div>
+                    <div class="form-group" style="margin-top: 15px;">
+                        <label for="aiApiKey" style="color: white;">Azure OpenAI API Key:</label>
+                        <input type="password" id="aiApiKey" placeholder="Enter your Azure OpenAI API key">
+                    </div>
+                    <div class="form-group">
+                        <label for="aiEndpoint" style="color: white;">Azure OpenAI Endpoint:</label>
+                        <input type="text" id="aiEndpoint" placeholder="https://your-resource.openai.azure.com/">
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <h3>⚙️ Display Settings</h3>
+                    <div class="form-group">
+                        <label for="chartTitle">Chart Title:</label>
+                        <input type="text" id="chartTitle" value="Strategy Flowchart" placeholder="Enter chart title">
+                    </div>
+                    <div class="form-group">
+                        <label for="chartWidth">Canvas Width:</label>
+                        <input type="number" id="chartWidth" value="1200" min="800" max="2000">
+                    </div>
+                    <div class="form-group">
+                        <label for="chartHeight">Canvas Height:</label>
+                        <input type="number" id="chartHeight" value="800" min="600" max="1500">
+                    </div>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="showStepIds" checked>
+                        <label for="showStepIds">Show Step IDs</label>
+                    </div>
+                </div>
+                
+                <div class="settings-section">
+                    <button class="btn btn-success" onclick="generateFlowchart()" id="generateBtn" disabled>
+                        🎨 Generate Flowchart
+                    </button>
+                </div>
+            </div>
+            
+            <div class="content-area">
+                <div class="loading" id="loadingIndicator">
+                    <div class="loading-spinner"></div>
+                    <p>Processing your flowchart...</p>
+                </div>
+                
+                <div id="statusMessage"></div>
+                
+                <canvas id="flowchartCanvas" class="flowchart-canvas" width="1200" height="800"></canvas>
+                
+                <div class="export-buttons" id="exportButtons" style="display: none;">
+                    <button class="btn btn-success" onclick="downloadSVG()">📄 Download SVG</button>
+                    <button class="btn btn-success" onclick="downloadPNG()">🖼️ Download PNG</button>
+                    <button class="btn btn-warning" onclick="exportForLucidChart()">🔄 Export for LucidChart</button>
+                    <button class="btn btn-purple" onclick="exportToVisio()">📊 Export to Visio</button>
+                </div>
+                
+                <div class="progress-bar" id="progressBar" style="display: none;">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let flowchartData = [];
+        let generatedFlowchart = null;
+        
+        // Initialize the application
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeEventListeners();
+        });
+        
+        function initializeEventListeners() {
+            const uploadSection = document.getElementById('uploadSection');
+            const fileInput = document.getElementById('fileInput');
+            
+            // File upload handling
+            uploadSection.addEventListener('click', () => fileInput.click());
+            uploadSection.addEventListener('dragover', handleDragOver);
+            uploadSection.addEventListener('drop', handleDrop);
+            uploadSection.addEventListener('dragleave', handleDragLeave);
+            
+            fileInput.addEventListener('change', handleFileSelect);
+            
+            // Settings change handlers
+            document.getElementById('chartWidth').addEventListener('change', updateCanvasSize);
+            document.getElementById('chartHeight').addEventListener('change', updateCanvasSize);
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+            e.currentTarget.classList.add('drag-over');
+        }
+        
+        function handleDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                processFile(files[0]);
+            }
+        }
+        
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (file) {
+                processFile(file);
+            }
+        }
+        
+        async function processFile(file) {
+            try {
+                showStatus('Processing Excel file...', 'info');
+                
+                const data = await file.arrayBuffer();
+                const workbook = XLSX.read(data);
+                const sheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[sheetName];
+                const jsonData = XLSX.utils.sheet_to_json(worksheet);
+                
+                if (jsonData.length === 0) {
+                    throw new Error('No data found in Excel file');
+                }
+                
+                // Validate required columns
+                const requiredColumns = ['Step_ID', 'Element_Type', 'Title'];
+                const columns = Object.keys(jsonData[0]);
+                const missingColumns = requiredColumns.filter(col => !columns.includes(col));
+                
+                if (missingColumns.length > 0) {
+                    throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
+                }
+                
+                flowchartData = jsonData;
+                
+                // Update UI
+                document.getElementById('fileName').textContent = file.name;
+                document.getElementById('rowCount').textContent = jsonData.length;
+                document.getElementById('fileInfo').classList.remove('hidden');
+                document.getElementById('generateBtn').disabled = false;
+                
+                showStatus(`Successfully loaded ${jsonData.length} flowchart elements`, 'success');
+                
+            } catch (error) {
+                showStatus(`Error processing file: ${error.message}`, 'error');
+                console.error('File processing error:', error);
+            }
+        }
+        
+        async function generateFlowchart() {
+            if (flowchartData.length === 0) {
+                showStatus('Please upload an Excel file first', 'error');
+                return;
+            }
+            
+            try {
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('generateBtn').disabled = true;
+                showProgress(0);
+                
+                // Step 1: AI Text Optimization (if enabled)
+                let processedData = [...flowchartData];
+                if (document.getElementById('aiEnabled').checked) {
+                    showStatus('Optimizing text with AI...', 'info');
+                    showProgress(25);
+                    processedData = await optimizeTextWithAI(flowchartData);
+                }
+                
+                // Step 2: Layout Calculation
+                showStatus('Calculating layout positions...', 'info');
+                showProgress(50);
+                const layoutData = calculateLayout(processedData);
+                
+                // Step 3: Render Flowchart
+                showStatus('Rendering flowchart...', 'info');
+                showProgress(75);
+                renderFlowchart(layoutData);
+                
+                // Step 4: Complete
+                showProgress(100);
+                showStatus('Flowchart generated successfully!', 'success');
+                document.getElementById('exportButtons').style.display = 'flex';
+                
+                generatedFlowchart = layoutData;
+                
+            } catch (error) {
+                showStatus(`Error generating flowchart: ${error.message}`, 'error');
+                console.error('Generation error:', error);
+            } finally {
+                document.getElementById('loadingIndicator').style.display = 'none';
+                document.getElementById('generateBtn').disabled = false;
+                hideProgress();
+            }
+        }
+        
+        async function optimizeTextWithAI(data) {
+            const apiKey = document.getElementById('aiApiKey').value;
+            const endpoint = document.getElementById('aiEndpoint').value;
+            
+            if (!apiKey || !endpoint) {
+                showStatus('AI optimization skipped - API key or endpoint not provided', 'info');
+                return data;
+            }
+            
+            try {
+                const optimizedData = [];
+                
+                for (let i = 0; i < data.length; i++) {
+                    const item = {...data[i]};
+                    
+                    if (item.Title && item.Title.length > 50) {
+                        const prompt = `Shorten this financial flowchart element title while preserving all important information and meaning. Keep it under 40 characters. Original: "${item.Title}"`;
+                        
+                        const response = await fetch(`${endpoint}/openai/deployments/gpt-4/chat/completions?api-version=2024-02-15-preview`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'api-key': apiKey
+                            },
+                            body: JSON.stringify({
+                                messages: [
+                                    {
+                                        role: 'user',
+                                        content: prompt
+                                    }
+                                ],
+                                max_tokens: 100,
+                                temperature: 0.3
+                            })
+                        });
+                        
+                        if (response.ok) {
+                            const result = await response.json();
+                            item.Title = result.choices[0].message.content.trim().replace(/"/g, '');
+                        }
+                    }
+                    
+                    optimizedData.push(item);
+                }
+                
+                return optimizedData;
+                
+            } catch (error) {
+                console.error('AI optimization error:', error);
+                showStatus('AI optimization failed, using original text', 'info');
+                return data;
+            }
+        }
+        
+        function calculateLayout(data) {
+            // Sort by position hints or step ID
+            const sortedData = data.sort((a, b) => {
+                if (a.Position_Row !== b.Position_Row) {
+                    return (a.Position_Row || 0) - (b.Position_Row || 0);
+                }
+                return (a.Position_Col || 0) - (b.Position_Col || 0);
+            });
+            
+            const canvas = document.getElementById('flowchartCanvas');
+            const canvasWidth = parseInt(document.getElementById('chartWidth').value);
+            const canvasHeight = parseInt(document.getElementById('chartHeight').value);
+            
+            canvas.width = canvasWidth;
+            canvas.height = canvasHeight;
+            
+            // Calculate positions for each element
+            const elementWidth = 180;
+            const elementHeight = 80;
+            const marginX = 50;
+            const marginY = 100;
+            const spacingX = 220;
+            const spacingY = 120;
+            
+            const layoutData = sortedData.map((item, index) => {
+                const row = item.Position_Row || Math.floor(index / 5);
+                const col = item.Position_Col || (index % 5);
+                
+                return {
+                    ...item,
+                    x: marginX + (col * spacingX),
+                    y: marginY + (row * spacingY),
+                    width: elementWidth,
+                    height: elementHeight
+                };
+            });
+            
+            return layoutData;
+        }
+        
+        function renderFlowchart(layoutData) {
+            const canvas = document.getElementById('flowchartCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Draw title
+            const title = document.getElementById('chartTitle').value;
+            ctx.fillStyle = '#2c3e50';
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(title, canvas.width / 2, 40);
+            
+            // Draw connections first (behind elements)
+            drawConnections(ctx, layoutData);
+            
+            // Draw elements
+            layoutData.forEach(element => {
+                drawElement(ctx, element);
+            });
+        }
+        
+        function drawConnections(ctx, layoutData) {
+            layoutData.forEach(element => {
+                if (element.Connects_To) {
+                    const connections = element.Connects_To.toString().split(',').map(id => id.trim());
+                    connections.forEach(targetId => {
+                        const target = layoutData.find(el => el.Step_ID.toString() === targetId);
+                        if (target) {
+                            drawArrow(ctx, element, target);
+                        }
+                    });
+                }
+            });
+        }
+        
+        function drawElement(ctx, element) {
+            const colors = {
+                'Blue': '#3498db',
+                'Red': '#e74c3c',
+                'Green': '#27ae60',
+                'Gray': '#95a5a6',
+                'Yellow': '#f39c12',
+                'Purple': '#9b59b6'
+            };
+            
+            const color = colors[element.Color_Category] || '#34495e';
+            
+            // Draw shadow
+            ctx.fillStyle = 'rgba(0,0,0,0.1)';
+            ctx.fillRect(element.x + 3, element.y + 3, element.width, element.height);
+            
+            // Draw main box
+            ctx.fillStyle = color;
+            ctx.fillRect(element.x, element.y, element.width, element.height);
+            
+            // Draw border
+            ctx.strokeStyle = '#2c3e50';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(element.x, element.y, element.width, element.height);
+            
+            // Draw Step ID badge (if enabled)
+            if (document.getElementById('showStepIds').checked) {
+                ctx.fillStyle = '#e74c3c';
+                ctx.fillRect(element.x - 5, element.y - 5, 30, 25);
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(element.Step_ID, element.x + 10, element.y + 12);
+            }
+            
+            // Draw text content
+            ctx.fillStyle = 'white';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'left';
+            
+            let yOffset = element.y + 25;
+            
+            // Title
+            if (element.Title) {
+                ctx.font = 'bold 13px Arial';
+                const titleLines = wrapText(ctx, element.Title, element.width - 10);
+                titleLines.forEach(line => {
+                    ctx.fillText(line, element.x + 5, yOffset);
+                    yOffset += 14;
+                });
+                yOffset += 5;
+            }
+            
+            // Financial information
+            ctx.font = '11px Arial';
+            if (element.Opening_Balance) {
+                ctx.fillText(`Opening: ${element.Opening_Balance}`, element.x + 5, yOffset);
+                yOffset += 12;
+            }
+            if (element.Closing_Balance) {
+                ctx.fillText(`Closing: ${element.Closing_Balance}`, element.x + 5, yOffset);
+                yOffset += 12;
+            }
+            if (element.Annual_Amount) {
+                ctx.fillText(`Amount: ${element.Annual_Amount}`, element.x + 5, yOffset);
+            }
+        }
+        
+        function drawArrow(ctx, fromElement, toElement) {
+            const fromX = fromElement.x + fromElement.width;
+            const fromY = fromElement.y + fromElement.height / 2;
+            const toX = toElement.x;
+            const toY = toElement.y + toElement.height / 2;
+            
+            ctx.strokeStyle = '#34495e';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.stroke();
+            
+            // Arrow head
+            const headlen = 10;
+            const dx = toX - fromX;
+            const dy = toY - fromY;
+            const angle = Math.atan2(dy, dx);
+            
+            ctx.beginPath();
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+            ctx.stroke();
+        }
+        
+        function wrapText(ctx, text, maxWidth) {
+            const words = text.split(' ');
+            const lines = [];
+            let currentLine = '';
+            
+            words.forEach(word => {
+                const testLine = currentLine + (currentLine ? ' ' : '') + word;
+                const metrics = ctx.measureText(testLine);
+                
+                if (metrics.width > maxWidth && currentLine) {
+                    lines.push(currentLine);
+                    currentLine = word;
+                } else {
+                    currentLine = testLine;
+                }
+            });
+            
+            if (currentLine) {
+                lines.push(currentLine);
+            }
+            
+            return lines;
+        }
+        
+        // Export functions
+        function downloadSVG() {
+            // Create SVG version of the flowchart
+            const canvas = document.getElementById('flowchartCanvas');
+            const svgData = canvasToSVG(canvas, generatedFlowchart);
+            
+            const blob = new Blob([svgData], { type: 'image/svg+xml' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'strategy_flowchart.svg';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        function downloadPNG() {
+            const canvas = document.getElementById('flowchartCanvas');
+            const link = document.createElement('a');
+            link.download = 'strategy_flowchart.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+        
+        function exportForLucidChart() {
+            if (!generatedFlowchart) {
+                showStatus('Please generate a flowchart first', 'error');
+                return;
+            }
+            
+            // Create LucidChart-compatible CSV
+            const csvData = generateLucidChartCSV(generatedFlowchart);
+            const blob = new Blob([csvData], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'strategy_flowchart_lucidchart.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            showStatus('LucidChart CSV exported! Import this file into LucidChart to continue editing.', 'success');
+        }
+        
+        function exportToVisio() {
+            showStatus('Visio export functionality would be implemented with server-side processing', 'info');
+        }
+        
+        function generateLucidChartCSV(data) {
+            const headers = ['Id', 'Name', 'Shape', 'Line to', 'Description'];
+            const rows = [headers.join(',')];
+            
+            data.forEach(element => {
+                const row = [
+                    element.Step_ID,
+                    `"${element.Title}"`,
+                    getShapeType(element.Element_Type),
+                    element.Connects_To || '',
+                    `"${element.Action_Description || ''}"`
+                ];
+                rows.push(row.join(','));
+            });
+            
+            return rows.join('\n');
+        }
+        
+        function getShapeType(elementType) {
+            const shapeMap = {
+                'Account': 'Rectangle',
+                'Action': 'Diamond',
+                'Outcome': 'Oval',
+                'Note': 'Rectangle'
+            };
+            return shapeMap[elementType] || 'Rectangle';
+        }
+        
+        function canvasToSVG(canvas, data) {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            let svg = `<svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">`;
+            
+            // Background
+            svg += `<rect width="${width}" height="${height}" fill="white"/>`;
+            
+            // Title
+            const title = document.getElementById('chartTitle').value;
+            svg += `<text x="${width/2}" y="40" text-anchor="middle" font-family="Arial" font-size="24" font-weight="bold" fill="#2c3e50">${title}</text>`;
+            
+            // Draw connections
+            data.forEach(element => {
+                if (element.Connects_To) {
+                    const connections = element.Connects_To.toString().split(',').map(id => id.trim());
+                    connections.forEach(targetId => {
+                        const target = data.find(el => el.Step_ID.toString() === targetId);
+                        if (target) {
+                            const fromX = element.x + element.width;
+                            const fromY = element.y + element.height / 2;
+                            const toX = target.x;
+                            const toY = target.y + target.height / 2;
+                            
+                            svg += `<line x1="${fromX}" y1="${fromY}" x2="${toX}" y2="${toY}" stroke="#34495e" stroke-width="2" marker-end="url(#arrowhead)"/>`;
+                        }
+                    });
+                }
+            });
+            
+            // Arrow marker definition
+            svg += `<defs><marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0, 10 3.5, 0 7" fill="#34495e"/></marker></defs>`;
+            
+            // Draw elements
+            data.forEach(element => {
+                const colors = {
+                    'Blue': '#3498db',
+                    'Red': '#e74c3c',
+                    'Green': '#27ae60',
+                    'Gray': '#95a5a6',
+                    'Yellow': '#f39c12',
+                    'Purple': '#9b59b6'
+                };
+                
+                const color = colors[element.Color_Category] || '#34495e';
+                
+                // Main rectangle
+                svg += `<rect x="${element.x}" y="${element.y}" width="${element.width}" height="${element.height}" fill="${color}" stroke="#2c3e50" stroke-width="2"/>`;
+                
+                // Step ID badge
+                if (document.getElementById('showStepIds').checked) {
+                    svg += `<rect x="${element.x - 5}" y="${element.y - 5}" width="30" height="25" fill="#e74c3c"/>`;
+                    svg += `<text x="${element.x + 10}" y="${element.y + 12}" text-anchor="middle" font-family="Arial" font-size="14" font-weight="bold" fill="white">${element.Step_ID}</text>`;
+                }
+                
+                // Text content
+                let yOffset = element.y + 25;
+                
+                if (element.Title) {
+                    svg += `<text x="${element.x + 5}" y="${yOffset}" font-family="Arial" font-size="13" font-weight="bold" fill="white">${escapeXml(element.Title)}</text>`;
+                    yOffset += 20;
+                }
+                
+                if (element.Opening_Balance) {
+                    svg += `<text x="${element.x + 5}" y="${yOffset}" font-family="Arial" font-size="11" fill="white">Opening: ${escapeXml(element.Opening_Balance)}</text>`;
+                    yOffset += 15;
+                }
+                
+                if (element.Closing_Balance) {
+                    svg += `<text x="${element.x + 5}" y="${yOffset}" font-family="Arial" font-size="11" fill="white">Closing: ${escapeXml(element.Closing_Balance)}</text>`;
+                    yOffset += 15;
+                }
+                
+                if (element.Annual_Amount) {
+                    svg += `<text x="${element.x + 5}" y="${yOffset}" font-family="Arial" font-size="11" fill="white">Amount: ${escapeXml(element.Annual_Amount)}</text>`;
+                }
+            });
+            
+            svg += '</svg>';
+            return svg;
+        }
+        
+        function escapeXml(text) {
+            if (!text) return '';
+            return text.toString()
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+        
+        function downloadTemplate() {
+            const headers = [
+                'Step_ID', 'Element_Type', 'Title', 'Opening_Balance', 'Closing_Balance', 
+                'Action_Description', 'Annual_Amount', 'Color_Category', 'Connects_To', 
+                'Position_Row', 'Position_Col'
+            ];
+            
+            const sampleData = [
+                [1, 'Account', 'Super Accumulation Account', '$500,000', '$0', '', '', 'Blue', '2', 1, 1],
+                [2, 'Action', 'Rollover', '', '', '$500,000', '', 'Gray', '3', 1, 2],
+                [3, 'Account', 'Pension Account', '$0', '$500,000', '', '', 'Blue', '4', 1, 3],
+                [4, 'Outcome', 'Annual Pension Payment', '', '', '', '$25,000', 'Green', '', 1, 4],
+                ['', '', '', '', '', '', '', '', '', '', ''],
+                ['INSTRUCTIONS:', '', '', '', '', '', '', '', '', '', ''],
+                ['Step_ID: Unique number for each element', '', '', '', '', '', '', '', '', '', ''],
+                ['Element_Type: Account, Action, Outcome, or Note', '', '', '', '', '', '', '', '', '', ''],
+                ['Title: Display name (will be AI-optimized)', '', '', '', '', '', '', '', '', '', ''],
+                ['Opening_Balance: Starting amount (e.g., $100,000)', '', '', '', '', '', '', '', '', '', ''],
+                ['Closing_Balance: Ending amount', '', '', '', '', '', '', '', '', '', ''],
+                ['Action_Description: Details for action steps', '', '', '', '', '', '', '', '', '', ''],
+                ['Annual_Amount: Yearly financial impact', '', '', '', '', '', '', '', '', '', ''],
+                ['Color_Category: Blue, Red, Green, Gray, Yellow, Purple', '', '', '', '', '', '', '', '', '', ''],
+                ['Connects_To: Step_IDs this connects to (comma-separated)', '', '', '', '', '', '', '', '', '', ''],
+                ['Position_Row: Layout row (0, 1, 2, etc.)', '', '', '', '', '', '', '', '', '', ''],
+                ['Position_Col: Layout column (0, 1, 2, etc.)', '', '', '', '', '', '', '', '', '', '']
+            ];
+            
+            const ws = XLSX.utils.aoa_to_sheet([headers, ...sampleData]);
+            
+            // Set column widths
+            ws['!cols'] = [
+                {wch: 10}, {wch: 15}, {wch: 30}, {wch: 15}, {wch: 15},
+                {wch: 25}, {wch: 15}, {wch: 15}, {wch: 15}, {wch: 12}, {wch: 12}
+            ];
+            
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, 'Strategy Template');
+            XLSX.writeFile(wb, 'Strategy_Flowchart_Template.xlsx');
+        }
+        
+        function updateCanvasSize() {
+            const canvas = document.getElementById('flowchartCanvas');
+            canvas.width = parseInt(document.getElementById('chartWidth').value);
+            canvas.height = parseInt(document.getElementById('chartHeight').value);
+            
+            // Regenerate if data exists
+            if (generatedFlowchart) {
+                const layoutData = calculateLayout(flowchartData);
+                renderFlowchart(layoutData);
+                generatedFlowchart = layoutData;
+            }
+        }
+        
+        // Utility functions
+        function showStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.className = `status-message status-${type}`;
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            
+            // Auto-hide success messages after 5 seconds
+            if (type === 'success') {
+                setTimeout(() => {
+                    statusDiv.style.display = 'none';
+                }, 5000);
+            }
+        }
+        
+        function showProgress(percentage) {
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            
+            progressBar.style.display = 'block';
+            progressFill.style.width = percentage + '%';
+        }
+        
+        function hideProgress() {
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.display = 'none';
+        }
+        
+        // Additional features for future enhancement
+        function validateExcelData(data) {
+            const errors = [];
+            
+            data.forEach((row, index) => {
+                if (!row.Step_ID) {
+                    errors.push(`Row ${index + 1}: Missing Step_ID`);
+                }
+                if (!row.Element_Type) {
+                    errors.push(`Row ${index + 1}: Missing Element_Type`);
+                }
+                if (!row.Title) {
+                    errors.push(`Row ${index + 1}: Missing Title`);
+                }
+                
+                // Check for valid element types
+                const validTypes = ['Account', 'Action', 'Outcome', 'Note'];
+                if (row.Element_Type && !validTypes.includes(row.Element_Type)) {
+                    errors.push(`Row ${index + 1}: Invalid Element_Type. Must be one of: ${validTypes.join(', ')}`);
+                }
+                
+                // Check for valid colors
+                const validColors = ['Blue', 'Red', 'Green', 'Gray', 'Yellow', 'Purple'];
+                if (row.Color_Category && !validColors.includes(row.Color_Category)) {
+                    errors.push(`Row ${index + 1}: Invalid Color_Category. Must be one of: ${validColors.join(', ')}`);
+                }
+            });
+            
+            return errors;
+        }
+        
+        function optimizeLayout(data) {
+            // Advanced layout optimization logic could go here
+            // For now, we use the simple grid-based approach
+            return data;
+        }
+        
+        function exportDataAsJSON() {
+            if (!generatedFlowchart) {
+                showStatus('Please generate a flowchart first', 'error');
+                return;
+            }
+            
+            const jsonData = JSON.stringify(generatedFlowchart, null, 2);
+            const blob = new Blob([jsonData], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'strategy_flowchart_data.json';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Save settings to localStorage for next session
+        function saveSettings() {
+            const settings = {
+                chartTitle: document.getElementById('chartTitle').value,
+                chartWidth: document.getElementById('chartWidth').value,
+                chartHeight: document.getElementById('chartHeight').value,
+                showStepIds: document.getElementById('showStepIds').checked,
+                aiEnabled: document.getElementById('aiEnabled').checked,
+                aiEndpoint: document.getElementById('aiEndpoint').value
+            };
+            
+            localStorage.setItem('flowchartSettings', JSON.stringify(settings));
+        }
+        
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('flowchartSettings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                
+                document.getElementById('chartTitle').value = settings.chartTitle || 'Strategy Flowchart';
+                document.getElementById('chartWidth').value = settings.chartWidth || 1200;
+                document.getElementById('chartHeight').value = settings.chartHeight || 800;
+                document.getElementById('showStepIds').checked = settings.showStepIds !== false;
+                document.getElementById('aiEnabled').checked = settings.aiEnabled !== false;
+                document.getElementById('aiEndpoint').value = settings.aiEndpoint || '';
+            }
+        }
+        
+        // Load settings on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            
+            // Save settings when they change
+            ['chartTitle', 'chartWidth', 'chartHeight', 'aiEndpoint'].forEach(id => {
+                document.getElementById(id).addEventListener('change', saveSettings);
+            });
+            
+            ['showStepIds', 'aiEnabled'].forEach(id => {
+                document.getElementById(id).addEventListener('change', saveSettings);
+            });
+        });
+    </script>
+</body>
+</html>
